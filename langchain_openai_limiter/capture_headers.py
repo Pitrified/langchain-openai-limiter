@@ -1,6 +1,7 @@
 """
 Module which set hooks to catch limit-related headers from the OpenAI response
 """
+
 from datetime import datetime, timedelta
 import json
 from typing import Callable, Tuple, Union
@@ -9,7 +10,13 @@ import openai
 import openai.api_requestor
 import requests
 from .reset_time_parser import reset_time_to_ms
-from .limit_info import OrganizationLimitInfo, ApiKey, ModelName, set_limit_info, aset_limit_info
+from .limit_info import (
+    OrganizationLimitInfo,
+    ApiKey,
+    ModelName,
+    set_limit_info,
+    aset_limit_info,
+)
 
 
 def _extract_openai_api_key(authorization: str) -> ApiKey:
@@ -21,8 +28,9 @@ def _extract_openai_api_key(authorization: str) -> ApiKey:
     return openai_api_key
 
 
-def _extract_limit_info(headers: dict) -> Tuple[Union[None, ModelName],\
-                                                OrganizationLimitInfo]:
+def _extract_limit_info(
+    headers: dict,
+) -> Tuple[Union[None, ModelName], OrganizationLimitInfo]:
     """
     Parse limit information inside headers dictionary
     :return: Pair of model name + limit info
@@ -62,6 +70,8 @@ def _response_hook(response: requests.Response, *args, **kwargs) -> None:
         model_name = json.loads(response.request.body).get("model")
     assert model_name is not None
     set_limit_info(model_name, api_key, limit_info)
+
+
 # pylint: enable=unused-argument
 
 
@@ -75,11 +85,13 @@ def _attach_to_session(session: requests.Session) -> None:
     session.hooks["response"] = original_hook + [_response_hook]
 
 
-def _attach_to_session_getter(getter: Callable[[], requests.Session]) -> \
-    Callable[[], requests.Session]:
+def _attach_to_session_getter(
+    getter: Callable[[], requests.Session]
+) -> Callable[[], requests.Session]:
     """
     Attach `_response_hook` hook to `requests` session generator
     """
+
     def new_getter() -> requests.Session:
         session = getter()
         _attach_to_session(session)
@@ -103,6 +115,8 @@ def _attach_sync_session_hooks():
             _attach_to_session(openai.requestssession)
         elif callable(openai.requestssession):
             openai.requestssession = _attach_to_session_getter(openai.requestssession)
+
+
 # endregion
 
 
@@ -117,9 +131,12 @@ def _wrap_arequest_raw(old_arequest_raw):
     :param old_arequest_raw: Original `openai.api_requestor.APIRequestor.arequest_raw`
     :return: decorated `openai.api_requestor.APIRequestor.arequest_raw`
     """
+
     async def arequest_raw(self, *args, **kwargs) -> aiohttp.ClientResponse:
         response: aiohttp.ClientResponse = await old_arequest_raw(self, *args, **kwargs)
-        api_key = _extract_openai_api_key(response.request_info.headers["authorization"])
+        api_key = _extract_openai_api_key(
+            response.request_info.headers["authorization"]
+        )
         model_name, limit_info = _extract_limit_info(response.headers)
         if model_name is None:
             model_name = response.request_info.headers.get("x-model")
@@ -142,6 +159,8 @@ def _attach_async_session_hooks():
         old_arequest_raw = openai.api_requestor.APIRequestor.arequest_raw
         new_arequest_raw = _wrap_arequest_raw(old_arequest_raw)
         openai.api_requestor.APIRequestor.arequest_raw = new_arequest_raw
+
+
 # endregion
 
 

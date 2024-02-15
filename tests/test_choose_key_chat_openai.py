@@ -29,7 +29,7 @@ def test_choose_key_chat_openai_sync(load_env):
                 model_name="gpt-4-0613",
             )
         ),
-        openai_api_keys=api_keys
+        openai_api_keys=api_keys,
     )
     assert isinstance(chat_model.chat_openai, LimitAwaitChatOpenAI)
     history = [
@@ -45,7 +45,6 @@ def test_choose_key_chat_openai_sync(load_env):
         chat_model.generate([history])
     for key in api_keys:
         assert get_limit_info("gpt-4-0613", key) is not None
-    
 
 
 @pytest.mark.asyncio
@@ -63,7 +62,7 @@ async def test_limitawait_chat_openai_async(load_env):
                 model_name="gpt-4-0613",
             )
         ),
-        openai_api_keys=api_keys
+        openai_api_keys=api_keys,
     )
     assert isinstance(chat_model.chat_openai, LimitAwaitChatOpenAI)
     history = [
@@ -99,7 +98,7 @@ def test_choose_key_chat_openai_stream_sync(load_env):
                 model_name="gpt-4-0613",
             )
         ),
-        openai_api_keys=api_keys
+        openai_api_keys=api_keys,
     )
     assert isinstance(chat_model.chat_openai, LimitAwaitChatOpenAI)
     history = [
@@ -137,7 +136,7 @@ async def test_choose_key_chat_openai_astream_async(load_env):
                 model_name="gpt-4-0613",
             )
         ),
-        openai_api_keys=api_keys
+        openai_api_keys=api_keys,
     )
     assert isinstance(chat_model.chat_openai, LimitAwaitChatOpenAI)
     history = [

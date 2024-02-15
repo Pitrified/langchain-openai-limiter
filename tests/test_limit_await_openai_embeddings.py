@@ -1,6 +1,8 @@
 import os
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain_openai_limiter.limit_await_openai_embeddings import LimitAwaitOpenAIEmbeddings
+from langchain_openai_limiter.limit_await_openai_embeddings import (
+    LimitAwaitOpenAIEmbeddings,
+)
 from langchain_openai_limiter.limit_info import reset_limit_info
 import numpy as np
 import pytest
@@ -24,10 +26,14 @@ def test_limitawait_openai_embeddings(load_env):
             openai_api_key=api_key,
         )
     )
-    docs = np.array(embedder.embed_documents([
-        "Markdown is a lightweight markup language",
-        "Brainfuck is an esoteric programming language"
-    ]))
+    docs = np.array(
+        embedder.embed_documents(
+            [
+                "Markdown is a lightweight markup language",
+                "Brainfuck is an esoteric programming language",
+            ]
+        )
+    )
     query = np.array(embedder.embed_query("What is Markdown?"))
     similarity = calc_similarity(query, docs)
     assert similarity[0] > 0.9
@@ -44,10 +50,14 @@ async def test_limitawait_openai_embeddings_async(load_env):
             openai_api_key=api_key,
         )
     )
-    docs = np.array(await embedder.aembed_documents([
-        "Markdown is a lightweight markup language",
-        "Brainfuck is an esoteric programming language"
-    ]))
+    docs = np.array(
+        await embedder.aembed_documents(
+            [
+                "Markdown is a lightweight markup language",
+                "Brainfuck is an esoteric programming language",
+            ]
+        )
+    )
     query = np.array(await embedder.aembed_query("What is Markdown?"))
     similarity = calc_similarity(query, docs)
     assert similarity[0] > 0.9

@@ -1,6 +1,7 @@
 """
 Module for rate/token per minute waiting OpenAIEmbeddings wrapper
 """
+
 from typing import List
 from langchain.embeddings.base import Embeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -17,9 +18,13 @@ class LimitAwaitOpenAIEmbeddings(Embeddings):
     """
     Rate/Token Per Minute waiting OpenAIEmbeddings wrapper
     """
-    def __init__(self, openai_embeddings: OpenAIEmbeddings,
-                 limit_await_timeout: float = _LIMIT_AWAIT_TIMEOUT,
-                 limit_await_sleep: float = _LIMIT_AWAIT_SLEEP):
+
+    def __init__(
+        self,
+        openai_embeddings: OpenAIEmbeddings,
+        limit_await_timeout: float = _LIMIT_AWAIT_TIMEOUT,
+        limit_await_sleep: float = _LIMIT_AWAIT_SLEEP,
+    ):
         super().__init__()
         self.openai_embeddings = openai_embeddings
         self.limit_await_timeout = limit_await_timeout
@@ -46,7 +51,7 @@ class LimitAwaitOpenAIEmbeddings(Embeddings):
     @property
     def model(self) -> str:
         return self.openai_embeddings.model
-    
+
     @model.setter
     def model(self, value: str) -> None:
         self.openai_embeddings.model = value

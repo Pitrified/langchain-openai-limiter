@@ -19,7 +19,7 @@ INSTALL_REQUIRES = [
 DEV_REQUIRES = [
     "pytest>=7.4.1",
     "pytest-asyncio>=0.21.1",
-    "numpy>=1.26.1"
+    "numpy>=1.26.1",
 ]
 URL = "https://github.com/alex4321/langchain-openai-limiter"
 LONG_DESCRIPTION_FNAME = os.path.join(os.path.dirname(__file__), "README.md")
@@ -40,5 +40,5 @@ setup(
     url=URL,
     extras_require={
         "dev": DEV_REQUIRES,
-    }
+    },
 )

@@ -2,7 +2,10 @@ from asyncio import gather
 import random
 import os
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain_openai_limiter import LimitAwaitOpenAIEmbeddings, ChooseKeyOpenAIEmbeddings
+from langchain_openai_limiter import (
+    LimitAwaitOpenAIEmbeddings,
+    ChooseKeyOpenAIEmbeddings,
+)
 from langchain_openai_limiter.limit_info import reset_limit_info, get_limit_info
 import numpy as np
 import pytest
@@ -38,10 +41,14 @@ def test_choosekey_openai_embeddings(load_env):
     )
     random.seed(RANDOM_STATE)
     for i in range(4):
-        docs = np.array(embedder.embed_documents([
-            "Markdown is a lightweight markup language",
-            "Brainfuck is an esoteric programming language"
-        ]))
+        docs = np.array(
+            embedder.embed_documents(
+                [
+                    "Markdown is a lightweight markup language",
+                    "Brainfuck is an esoteric programming language",
+                ]
+            )
+        )
         query = np.array(embedder.embed_query("What is Markdown?"))
         similarity = calc_similarity(query, docs)
         assert similarity[0] > 0.9
@@ -53,15 +60,19 @@ def test_choosekey_openai_embeddings(load_env):
 @pytest.mark.asyncio
 async def test_choosekey_openai_embeddings_async(load_env):
     async def _run_test(embedder):
-        docs = np.array(await embedder.aembed_documents([
-            "Markdown is a lightweight markup language",
-            "Brainfuck is an esoteric programming language"
-        ]))
+        docs = np.array(
+            await embedder.aembed_documents(
+                [
+                    "Markdown is a lightweight markup language",
+                    "Brainfuck is an esoteric programming language",
+                ]
+            )
+        )
         query = np.array(await embedder.aembed_query("What is Markdown?"))
         similarity = calc_similarity(query, docs)
         assert similarity[0] > 0.9
         assert similarity[1] < 0.8
-        
+
     reset_limit_info()
     api_keys = [
         os.environ["OPENAI_API_KEY0"],

@@ -1,8 +1,12 @@
 """
 Wrapper for ChatOpenAI which do limit awaiting before running the model
 """
+
 from typing import Any, AsyncIterator, Coroutine, Iterator, List
-from langchain.callbacks.manager import AsyncCallbackManagerForLLMRun, CallbackManagerForLLMRun
+from langchain.callbacks.manager import (
+    AsyncCallbackManagerForLLMRun,
+    CallbackManagerForLLMRun,
+)
 from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema.messages import BaseMessage
@@ -19,6 +23,7 @@ class LimitAwaitChatOpenAI(BaseChatModel):
     """
     Rate/Token Per Minute waiting ChatOpenAI wrapper
     """
+
     chat_openai: ChatOpenAI
     limit_await_timeout: float = _LIMIT_AWAIT_TIMEOUT
     limit_await_sleep: float = _LIMIT_AWAIT_SLEEP
@@ -65,10 +70,13 @@ class LimitAwaitChatOpenAI(BaseChatModel):
         """
         return self.chat_openai.get_num_tokens_from_messages(messages)
 
-    def _stream(self, messages: List[BaseMessage],
-                stop: List[str] | None = None,
-                run_manager: CallbackManagerForLLMRun | None = None,
-                **kwargs: Any) -> Iterator[ChatGenerationChunk]:
+    def _stream(
+        self,
+        messages: List[BaseMessage],
+        stop: List[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
+        **kwargs: Any
+    ) -> Iterator[ChatGenerationChunk]:
         token_count = self.get_num_tokens_from_messages(messages)
         wait_for_limit(
             self.model_name,
@@ -84,10 +92,13 @@ class LimitAwaitChatOpenAI(BaseChatModel):
 
     # pylint: disable=invalid-overridden-method
     # I need to perform async operations inside, so method is async - and it works this way
-    async def _astream(self, messages: List[BaseMessage],
-                       stop: List[str] | None = None,
-                       run_manager: AsyncCallbackManagerForLLMRun | None = None,
-                       **kwargs: Any) -> AsyncIterator[ChatGenerationChunk]:
+    async def _astream(
+        self,
+        messages: List[BaseMessage],
+        stop: List[str] | None = None,
+        run_manager: AsyncCallbackManagerForLLMRun | None = None,
+        **kwargs: Any
+    ) -> AsyncIterator[ChatGenerationChunk]:
         token_count = self.get_num_tokens_from_messages(messages)
         await await_for_limit(
             self.model_name,
@@ -97,15 +108,21 @@ class LimitAwaitChatOpenAI(BaseChatModel):
             self.limit_await_sleep,
         )
         # pylint: disable=protected-access
-        async for chunk in self.chat_openai._astream(messages, stop, run_manager, **kwargs):
+        async for chunk in self.chat_openai._astream(
+            messages, stop, run_manager, **kwargs
+        ):
             yield chunk
         # pylint: enable=protected-access
+
     # pylint: enable=invalid-overridden-method
 
-    def _generate(self, messages: List[BaseMessage],
-                  stop: List[str] | None = None,
-                  run_manager: CallbackManagerForLLMRun | None = None,
-                  **kwargs: Any) -> ChatResult:
+    def _generate(
+        self,
+        messages: List[BaseMessage],
+        stop: List[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
+        **kwargs: Any
+    ) -> ChatResult:
         token_count = self.get_num_tokens_from_messages(messages)
         wait_for_limit(
             self.model_name,
@@ -118,10 +135,13 @@ class LimitAwaitChatOpenAI(BaseChatModel):
         return self.chat_openai._generate(messages, stop, run_manager, **kwargs)
         # pylint: enable=protected-access
 
-    async def _agenerate(self, messages: List[BaseMessage],
-                         stop: List[str] | None = None,
-                         run_manager: AsyncCallbackManagerForLLMRun | None = None,
-                         **kwargs: Any) -> Coroutine[Any, Any, ChatResult]:
+    async def _agenerate(
+        self,
+        messages: List[BaseMessage],
+        stop: List[str] | None = None,
+        run_manager: AsyncCallbackManagerForLLMRun | None = None,
+        **kwargs: Any
+    ) -> Coroutine[Any, Any, ChatResult]:
         token_count = self.get_num_tokens_from_messages(messages)
         await await_for_limit(
             self.model_name,

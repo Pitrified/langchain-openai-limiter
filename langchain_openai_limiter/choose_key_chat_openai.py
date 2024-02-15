@@ -1,9 +1,13 @@
 """
 Wrapper to choose between a few OpenAI keys before chat generation
 """
+
 import copy
 from typing import Any, AsyncIterator, Iterator, List, Union
-from langchain.callbacks.manager import AsyncCallbackManagerForLLMRun, CallbackManagerForLLMRun
+from langchain.callbacks.manager import (
+    AsyncCallbackManagerForLLMRun,
+    CallbackManagerForLLMRun,
+)
 from langchain.chat_models.base import BaseChatModel
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.output import ChatGenerationChunk, ChatResult
@@ -21,10 +25,11 @@ class ChooseKeyChatOpenAI(BaseChatModel):
     """
     Key-choosing OpenAI chat wrapper
     """
-    chat_openai: BaseChatModel # Since pydantic do not allow polymorphism -
-                               # we will use base model her
-                               # than introduce specific property and validatior
-    openai_api_keys: List[ApiKey] # API keys
+
+    chat_openai: BaseChatModel  # Since pydantic do not allow polymorphism -
+    # we will use base model her
+    # than introduce specific property and validatior
+    openai_api_keys: List[ApiKey]  # API keys
 
     @property
     def _chat_model(self) -> Union[ChatOpenAI, LimitAwaitChatOpenAI]:
@@ -58,15 +63,18 @@ class ChooseKeyChatOpenAI(BaseChatModel):
         """
         return self._chat_model.get_num_tokens_from_messages(messages)
 
-    def _stream(self, messages: List[BaseMessage],
-                stop: List[str] | None = None,
-                run_manager: CallbackManagerForLLMRun | None = None,
-                **kwargs: Any) -> Iterator[ChatGenerationChunk]:
+    def _stream(
+        self,
+        messages: List[BaseMessage],
+        stop: List[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
+        **kwargs: Any
+    ) -> Iterator[ChatGenerationChunk]:
         token_count = self.get_num_tokens_from_messages(messages)
         chat_openai = copy.deepcopy(self._chat_model)
-        chat_openai.openai_api_key = choose_key(chat_openai.model_name,
-                                                self.openai_api_keys,
-                                                token_count)
+        chat_openai.openai_api_key = choose_key(
+            chat_openai.model_name, self.openai_api_keys, token_count
+        )
         # pylint: disable=protected-access
         for chunk in chat_openai._stream(messages, stop, run_manager, **kwargs):
             yield chunk
@@ -74,52 +82,56 @@ class ChooseKeyChatOpenAI(BaseChatModel):
 
     # pylint: disable=invalid-overridden-method
     # I need to perform async operations inside, so method is async - and it works this way
-    async def _astream(self, messages: List[BaseMessage],
-                       stop: List[str] | None = None,
-                       run_manager: AsyncCallbackManagerForLLMRun | None = None,
-                       **kwargs: Any) -> AsyncIterator[ChatGenerationChunk]:
+    async def _astream(
+        self,
+        messages: List[BaseMessage],
+        stop: List[str] | None = None,
+        run_manager: AsyncCallbackManagerForLLMRun | None = None,
+        **kwargs: Any
+    ) -> AsyncIterator[ChatGenerationChunk]:
         token_count = self.get_num_tokens_from_messages(messages)
         chat_openai = copy.deepcopy(self._chat_model)
-        chat_openai.openai_api_key = await achoose_key(chat_openai.model_name,
-                                                       self.openai_api_keys,
-                                                       token_count)
+        chat_openai.openai_api_key = await achoose_key(
+            chat_openai.model_name, self.openai_api_keys, token_count
+        )
         # pylint: disable=protected-access
         async for chunk in chat_openai._astream(messages, stop, run_manager, **kwargs):
             yield chunk
         # pylint: enable=protected-access
+
     # pylint: enable=invalid-overridden-method
 
-    def _generate(self, messages: List[BaseMessage],
-                  stop: List[str] | None = None,
-                  run_manager: CallbackManagerForLLMRun | None = None,
-                  **kwargs: Any) -> ChatResult:
+    def _generate(
+        self,
+        messages: List[BaseMessage],
+        stop: List[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
+        **kwargs: Any
+    ) -> ChatResult:
         token_count = self.get_num_tokens_from_messages(messages)
         chat_openai = copy.deepcopy(self._chat_model)
-        chosen_key = choose_key(chat_openai.model_name,
-                                self.openai_api_keys,
-                                token_count)
+        chosen_key = choose_key(
+            chat_openai.model_name, self.openai_api_keys, token_count
+        )
         chat_openai.openai_api_key = chosen_key
         # pylint: disable=protected-access
-        return chat_openai._generate(messages,
-                                     stop,
-                                     run_manager,
-                                     **kwargs)
+        return chat_openai._generate(messages, stop, run_manager, **kwargs)
         # pylint: enable=protected-access
 
-    async def _agenerate(self, messages: List[BaseMessage],
-                         stop: List[str] | None = None,
-                         run_manager: AsyncCallbackManagerForLLMRun | None = None,
-                         **kwargs: Any) -> ChatResult:
+    async def _agenerate(
+        self,
+        messages: List[BaseMessage],
+        stop: List[str] | None = None,
+        run_manager: AsyncCallbackManagerForLLMRun | None = None,
+        **kwargs: Any
+    ) -> ChatResult:
         token_count = self.get_num_tokens_from_messages(messages)
         chat_openai = copy.deepcopy(self._chat_model)
-        chat_openai.openai_api_key = await achoose_key(chat_openai.model_name,
-                                                       self.openai_api_keys,
-                                                       token_count)
+        chat_openai.openai_api_key = await achoose_key(
+            chat_openai.model_name, self.openai_api_keys, token_count
+        )
         # pylint: disable=protected-access
-        return await chat_openai._agenerate(messages,
-                                            stop,
-                                            run_manager,
-                                            **kwargs)
+        return await chat_openai._agenerate(messages, stop, run_manager, **kwargs)
         # pylint: enable=protected-access
 
 
