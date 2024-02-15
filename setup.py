@@ -11,15 +11,16 @@ AUTHOR_EMAIL = "gaussmake@gmail.com"
 PACKAGES = [NAME]
 INSTALL_REQUIRES = [
     "aiohttp>=3.8.6",
-    "openai<=0.28.1",
+    "openai>=1.0.0",
     "requests>=2.31.0",
-    "langchain>=0.0.329",
+    "langchain>=0.1.0",
     "tiktoken>=0.5.1",
 ]
 DEV_REQUIRES = [
     "pytest>=7.4.1",
     "pytest-asyncio>=0.21.1",
     "numpy>=1.26.1",
+    "python-dotenv>=1.0.0",
 ]
 URL = "https://github.com/alex4321/langchain-openai-limiter"
 LONG_DESCRIPTION_FNAME = os.path.join(os.path.dirname(__file__), "README.md")
